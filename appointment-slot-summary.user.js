@@ -6,8 +6,8 @@
 // @author       juanfelv
 // @match        https://fc-inbound-dock-hub-eu.aka.amazon.com/es_ES/
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/ChloricRose/tampermonkey-scripts/main/appointment-slot-summary.user.js
-// @downloadURL  https://raw.githubusercontent.com/ChloricRose/tampermonkey-scripts/main/appointment-slot-summary.user.js
+// @updateURL    https://raw.githubusercontent.com/ChloricRose/tampermonkey-scripts/master/appointment-slot-summary.user.js
+// @downloadURL  https://raw.githubusercontent.com/ChloricRose/tampermonkey-scripts/master/appointment-slot-summary.user.js
 // ==/UserScript==
 
 
