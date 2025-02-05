@@ -130,6 +130,7 @@
         overflow-x: auto;
     `;
 
+<<<<<<< HEAD
     const header = document.createElement("div");
     header.style = `
         background-color: #007bff;
@@ -249,6 +250,71 @@
   function updateSummaryPanel(id, summaryData) {
     const summary = document.getElementById(`${id}-content`);
     summary.innerHTML = `
+=======
+        function createSummaryPanel(id, titleText) {
+        const panel = document.createElement('div');
+        panel.id = id;
+        panel.style = `
+            position: fixed;
+            top: ${id === 'summary-panel-early' ? '90px' : '480px'};
+            right: 20px;
+            background-color: #fdfdfd;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            padding: 0;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            font-family: Arial, sans-serif;
+            color: #333;
+            z-index: 10000;
+            cursor: move;
+            max-width: 100%;
+            overflow-x: auto;
+        `;
+    
+        const header = document.createElement('div');
+        header.style = `
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            text-align: center;
+        `;
+        const title = document.createElement('h3');
+        title.textContent = titleText;
+        title.style = 'margin: 0; font-size: 20px;';
+        header.appendChild(title);
+        panel.appendChild(header);
+    
+        const toggleButton = document.createElement('button');
+        toggleButton.textContent = 'Toggle Details';
+        toggleButton.style = 'margin: 10px;';
+        toggleButton.addEventListener('click', () => {
+            const details = panel.querySelectorAll('.details');
+            details.forEach(detail => {
+                detail.style.display = detail.style.display === 'none' ? 'table-cell' : 'none';
+            });
+        });
+        panel.appendChild(toggleButton);
+    
+        const summary = document.createElement('div');
+        summary.id = `${id}-content`;
+        summary.style = 'padding: 15px; font-size: 16px; line-height: 1.6;';
+        panel.appendChild(summary);
+    
+        const footer = document.createElement('div');
+        footer.textContent = 'Designed by cricer Developed by juanfelv';
+        footer.style = 'padding: 10px; font-size: 12px; text-align: center; color: #999; border-top: 1px solid #ddd;';
+        panel.appendChild(footer);
+    
+        enableDrag(panel);
+        document.body.appendChild(panel);
+    }
+    
+    function updateSummaryPanel(id, summaryData) {
+        const summary = document.getElementById(`${id}-content`);
+        summary.innerHTML = `
+>>>>>>> ed680a7 (TryDeployablePanel)
             <table style="width: 100%; border-collapse: collapse;">
                 <tr style="background-color: #f2f2f2;">
                     <th style="text-align: left; padding: 8px;">Category</th>
@@ -312,6 +378,16 @@
                 </tr>
             </table>
         `;
+<<<<<<< HEAD
+=======
+    
+        // Initially hide the details columns
+        const details = summary.querySelectorAll('.details');
+        details.forEach(detail => {
+            detail.style.display = 'none';
+        });
+    }
+>>>>>>> ed680a7 (TryDeployablePanel)
 
     // Initially hide the details columns
     const details = summary.querySelectorAll(".details");
