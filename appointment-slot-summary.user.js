@@ -111,7 +111,7 @@
         });
     }
 
-    function createSummaryPanel(id, titleText) {
+        function createSummaryPanel(id, titleText) {
         const panel = document.createElement('div');
         panel.id = id;
         panel.style = `
@@ -130,7 +130,7 @@
             max-width: 100%;
             overflow-x: auto;
         `;
-
+    
         const header = document.createElement('div');
         header.style = `
             background-color: #007bff;
@@ -145,21 +145,32 @@
         title.style = 'margin: 0; font-size: 20px;';
         header.appendChild(title);
         panel.appendChild(header);
-
+    
+        const toggleButton = document.createElement('button');
+        toggleButton.textContent = 'Toggle Details';
+        toggleButton.style = 'margin: 10px;';
+        toggleButton.addEventListener('click', () => {
+            const details = panel.querySelectorAll('.details');
+            details.forEach(detail => {
+                detail.style.display = detail.style.display === 'none' ? 'table-cell' : 'none';
+            });
+        });
+        panel.appendChild(toggleButton);
+    
         const summary = document.createElement('div');
         summary.id = `${id}-content`;
         summary.style = 'padding: 15px; font-size: 16px; line-height: 1.6;';
         panel.appendChild(summary);
-
+    
         const footer = document.createElement('div');
         footer.textContent = 'Designed by cricer Developed by juanfelv';
         footer.style = 'padding: 10px; font-size: 12px; text-align: center; color: #999; border-top: 1px solid #ddd;';
         panel.appendChild(footer);
-
+    
         enableDrag(panel);
         document.body.appendChild(panel);
     }
-
+    
     function updateSummaryPanel(id, summaryData) {
         const summary = document.getElementById(`${id}-content`);
         summary.innerHTML = `
@@ -168,64 +179,70 @@
                     <th style="text-align: left; padding: 8px;">Category</th>
                     <th style="text-align: right; padding: 8px;">Count</th>
                     <th style="text-align: right; padding: 8px;">Units</th>
-                    <th style="text-align: right; padding: 8px;">Scheduled</th>
-                    <th style="text-align: right; padding: 8px;">Arrived</th>
-                    <th style="text-align: right; padding: 8px;">Check-In</th>
-                    <th style="text-align: right; padding: 8px;">Unloaded</th>
-                    <th style="text-align: right; padding: 8px;">Closed</th>
+                    <th class="details" style="text-align: right; padding: 8px;">Scheduled</th>
+                    <th class="details" style="text-align: right; padding: 8px;">Arrived</th>
+                    <th class="details" style="text-align: right; padding: 8px;">Check-In</th>
+                    <th class="details" style="text-align: right; padding: 8px;">Unloaded</th>
+                    <th class="details" style="text-align: right; padding: 8px;">Closed</th>
                 </tr>
                 <tr style="background-color: #ffffff;">
                     <td style="padding: 8px;"><strong>Total</strong></td>
                     <td style="text-align: right; padding: 8px;">${summaryData.totalSlots}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.totalUnits}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.totalScheduled}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.totalArrived}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.totalCheckIn}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.totalUnloaded}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.totalClosed}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.totalScheduled}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.totalArrived}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.totalCheckIn}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.totalUnloaded}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.totalClosed}</td>
                 </tr>
                 <tr style="background-color: #f2f2f2;">
                     <td style="padding: 8px;"><i class="fa fa-truck"></i> Vendor</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.vendorCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.vendorUnits}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.vendorScheduled}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.vendorArrived}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.vendorCheckIn}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.vendorUnloaded}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.vendorClosed}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.vendorScheduled}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.vendorArrived}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.vendorCheckIn}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.vendorUnloaded}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.vendorClosed}</td>
                 </tr>
                 <tr style="background-color: #ffffff;">
                     <td style="padding: 8px;"><i class="fa fa-exchange"></i> TSI</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.tsiCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.tsiUnits}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.tsiScheduled}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.tsiArrived}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.tsiCheckIn}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.tsiUnloaded}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.tsiClosed}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.tsiScheduled}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.tsiArrived}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.tsiCheckIn}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.tsiUnloaded}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.tsiClosed}</td>
                 </tr>
                 <tr style="background-color: #f2f2f2;">
                     <td style="padding: 8px;"><i class="fa fa-cubes"></i> Parcel</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.parcelCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.parcelUnits}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.parcelScheduled}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.parcelArrived}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.parcelCheckIn}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.parcelUnloaded}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.parcelClosed}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.parcelScheduled}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.parcelArrived}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.parcelCheckIn}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.parcelUnloaded}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.parcelClosed}</td>
                 </tr>
                 <tr style="background-color: #ffffff;">
                     <td style="padding: 8px;"><i class="fa fa-ship"></i> Ocean</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.oceanCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.oceanUnits}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.oceanScheduled}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.oceanArrived}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.oceanCheckIn}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.oceanUnloaded}</td>
-                    <td style="text-align: right; padding: 8px;">${summaryData.oceanClosed}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.oceanScheduled}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.oceanArrived}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.oceanCheckIn}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.oceanUnloaded}</td>
+                    <td class="details" style="text-align: right; padding: 8px;">${summaryData.oceanClosed}</td>
                 </tr>
             </table>
         `;
+    
+        // Initially hide the details columns
+        const details = summary.querySelectorAll('.details');
+        details.forEach(detail => {
+            detail.style.display = 'none';
+        });
     }
 
     const processSlots = debounce(() => {
