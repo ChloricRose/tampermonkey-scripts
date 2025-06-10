@@ -33,6 +33,7 @@
     const parcelUnitEstimate = 800;
     const EARLY_THRESHOLD = 2540;
     let observer = null;
+    let panelsManuallyMoved = false;
 
     function debounce(func, delay) {
         let timeout;
@@ -81,42 +82,64 @@
         if (slotClass === 'CLOSED') summary.totalClosed++;
     }
 
-    function enableDrag(element) {
+    function enableDrag(panel, handle) {
         let offsetX = 0;
         let offsetY = 0;
         let isDragging = false;
 
-        element.addEventListener('mousedown', (e) => {
+        handle.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button')) return;
+            panelsManuallyMoved = true;
             isDragging = true;
-            offsetX = e.clientX - element.getBoundingClientRect().left;
-            offsetY = e.clientY - element.getBoundingClientRect().top;
-            element.style.cursor = 'grabbing';
+            const rect = panel.getBoundingClientRect();
+            panel.style.position = 'fixed';
+            panel.style.left = `${rect.left}px`;
+            panel.style.top = `${rect.top}px`;
+            panel.style.right = 'auto';
+            panel.style.zIndex = 10001;
+            document.body.appendChild(panel);
+
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            handle.style.cursor = 'grabbing';
+            e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
             if (isDragging) {
                 const x = e.clientX - offsetX;
                 const y = e.clientY - offsetY;
-                element.style.left = `${x}px`;
-                element.style.top = `${y}px`;
-                element.style.right = 'auto';
+                panel.style.left = `${x}px`;
+                panel.style.top = `${y}px`;
+                panel.style.right = 'auto';
             }
         });
 
         document.addEventListener('mouseup', () => {
             if (isDragging) {
                 isDragging = false;
-                element.style.cursor = 'move';
+                handle.style.cursor = 'move';
             }
         });
+    }
+
+    function adjustLatePanelPosition() {
+        if (panelsManuallyMoved) return;
+        const earlyPanel = document.getElementById('summary-panel-early');
+        const latePanel = document.getElementById('summary-panel-late');
+        if (earlyPanel && latePanel) {
+            const rect = earlyPanel.getBoundingClientRect();
+            latePanel.style.top = `${rect.bottom + 20 + window.scrollY}px`;
+        }
     }
 
     function createSummaryPanel(id, titleText) {
         const panel = document.createElement('div');
         panel.id = id;
+        const initialTop = id === 'summary-panel-early' ? 90 : 250;
         panel.style = `
             position: fixed;
-            top: ${id === 'summary-panel-early' ? '90px' : '480px'};
+            top: ${initialTop}px;
             right: 20px;
             background-color: #fdfdfd;
             border-radius: 12px;
@@ -126,9 +149,11 @@
             font-family: Arial, sans-serif;
             color: #333;
             z-index: 10000;
-            cursor: move;
-            max-width: 100%;
-            overflow-x: auto;
+            max-width: 350px;
+            min-width: 220px;
+            width: 90vw;
+            max-height: 60vh;
+            overflow: auto;
         `;
 
         const header = document.createElement('div');
@@ -139,16 +164,34 @@
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
             text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            cursor: move;
         `;
+        // Minimize button
+        const minimizeBtn = document.createElement('button');
+        minimizeBtn.textContent = '–';
+        minimizeBtn.style = `
+            float: right;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        `;
+        header.appendChild(minimizeBtn);
+
         const title = document.createElement('h3');
         title.textContent = titleText;
-        title.style = 'margin: 0; font-size: 20px;';
+        title.style = 'margin: 0; font-size: 20px; display: inline-block;';
         header.appendChild(title);
         panel.appendChild(header);
 
         const summary = document.createElement('div');
         summary.id = `${id}-content`;
-        summary.style = 'padding: 15px; font-size: 16px; line-height: 1.6;';
+        summary.style = 'padding: 15px; font-size: 16px; line-height: 1.6; overflow-y: auto; max-height: 40vh;';
         panel.appendChild(summary);
 
         const footer = document.createElement('div');
@@ -156,7 +199,20 @@
         footer.style = 'padding: 10px; font-size: 12px; text-align: center; color: #999; border-top: 1px solid #ddd;';
         panel.appendChild(footer);
 
-        enableDrag(panel);
+        minimizeBtn.addEventListener('click', () => {
+            const isMinimized = panel.classList.toggle('minimized');
+            if (isMinimized) {
+                summary.style.display = 'none';
+                footer.style.display = 'none';
+                minimizeBtn.textContent = '+';
+            } else {
+                summary.style.display = '';
+                footer.style.display = '';
+                minimizeBtn.textContent = '–';
+            }
+        });
+
+        enableDrag(panel, header);
         document.body.appendChild(panel);
     }
 
@@ -165,7 +221,7 @@
         summary.innerHTML = `
             <table style="width: 100%; border-collapse: collapse;">
                 <tr style="background-color: #f2f2f2;">
-                    <th style="text-align: left; padding: 8px;">Category</th>
+                    <th style="position: sticky; left: 0; background: #f2f2f2; z-index: 2; text-align: left; padding: 8px; box-shadow: 2px 0 5px -2px #888;">Category</th>
                     <th style="text-align: right; padding: 8px;">Count</th>
                     <th style="text-align: right; padding: 8px;">Units</th>
                     <th style="text-align: right; padding: 8px;">Scheduled</th>
@@ -175,7 +231,7 @@
                     <th style="text-align: right; padding: 8px;">Closed</th>
                 </tr>
                 <tr style="background-color: #ffffff;">
-                    <td style="padding: 8px;"><strong>Total</strong></td>
+                    <td style="position: sticky; left: 0; background: #fff; z-index: 1; padding: 8px; box-shadow: 2px 0 5px -2px #888;"><strong>Total</strong></td>
                     <td style="text-align: right; padding: 8px;">${summaryData.totalSlots}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.totalUnits}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.totalScheduled}</td>
@@ -185,7 +241,7 @@
                     <td style="text-align: right; padding: 8px;">${summaryData.totalClosed}</td>
                 </tr>
                 <tr style="background-color: #f2f2f2;">
-                    <td style="padding: 8px;"><i class="fa fa-truck"></i> Vendor</td>
+                    <td style="position: sticky; left: 0; background: #f2f2f2; z-index: 1; padding: 8px; box-shadow: 2px 0 5px -2px #888;"><i class="fa fa-truck"></i> Vendor</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.vendorCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.vendorUnits}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.vendorScheduled}</td>
@@ -195,7 +251,7 @@
                     <td style="text-align: right; padding: 8px;">${summaryData.vendorClosed}</td>
                 </tr>
                 <tr style="background-color: #ffffff;">
-                    <td style="padding: 8px;"><i class="fa fa-exchange"></i> TSI</td>
+                    <td style="position: sticky; left: 0; background: #fff; z-index: 1; padding: 8px; box-shadow: 2px 0 5px -2px #888;"><i class="fa fa-exchange"></i> TSI</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.tsiCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.tsiUnits}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.tsiScheduled}</td>
@@ -205,7 +261,7 @@
                     <td style="text-align: right; padding: 8px;">${summaryData.tsiClosed}</td>
                 </tr>
                 <tr style="background-color: #f2f2f2;">
-                    <td style="padding: 8px;"><i class="fa fa-cubes"></i> Parcel</td>
+                    <td style="position: sticky; left: 0; background: #f2f2f2; z-index: 1; padding: 8px; box-shadow: 2px 0 5px -2px #888;"><i class="fa fa-cubes"></i> Parcel</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.parcelCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.parcelUnits}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.parcelScheduled}</td>
@@ -215,7 +271,7 @@
                     <td style="text-align: right; padding: 8px;">${summaryData.parcelClosed}</td>
                 </tr>
                 <tr style="background-color: #ffffff;">
-                    <td style="padding: 8px;"><i class="fa fa-ship"></i> Ocean</td>
+                    <td style="position: sticky; left: 0; background: #fff; z-index: 1; padding: 8px; box-shadow: 2px 0 5px -2px #888;"><i class="fa fa-ship"></i> Ocean</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.oceanCount}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.oceanUnits}</td>
                     <td style="text-align: right; padding: 8px;">${summaryData.oceanScheduled}</td>
@@ -226,6 +282,9 @@
                 </tr>
             </table>
         `;
+        if (id === 'summary-panel-early') {
+            adjustLatePanelPosition();
+        }
     }
 
     const processSlots = debounce(() => {
@@ -302,7 +361,30 @@
     window.addEventListener('load', () => {
         createSummaryPanel('summary-panel-early', 'Appointment Slot Summary Early');
         createSummaryPanel('summary-panel-late', 'Appointment Slot Summary Late');
+        setTimeout(() => {
+            const earlyPanel = document.getElementById('summary-panel-early');
+            const latePanel = document.getElementById('summary-panel-late');
+            if (earlyPanel && latePanel) {
+                const rect = earlyPanel.getBoundingClientRect();
+                latePanel.style.top = `${rect.bottom + 20}px`;
+            }
+        }, 0);
         processSlots();
         observeDOMChanges();
     });
+
+    if (!document.getElementById('summary-panel-responsive-style')) {
+        const style = document.createElement('style');
+        style.id = 'summary-panel-responsive-style';
+        style.textContent = `
+        @media (max-width: 600px) {
+            #summary-panel-early, #summary-panel-late {
+                max-width: 98vw !important;
+                min-width: 0 !important;
+                font-size: 14px !important;
+            }
+        }
+        `;
+        document.head.appendChild(style);
+    }
 })();
