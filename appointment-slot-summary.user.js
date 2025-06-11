@@ -123,20 +123,11 @@
         });
     }
 
-    function adjustLatePanelPosition() {
-        if (panelsManuallyMoved) return;
-        const earlyPanel = document.getElementById('summary-panel-early');
-        const latePanel = document.getElementById('summary-panel-late');
-        if (earlyPanel && latePanel) {
-            const rect = earlyPanel.getBoundingClientRect();
-            latePanel.style.top = `${rect.bottom + 20 + window.scrollY}px`;
-        }
-    }
-
     function createSummaryPanel(id, titleText) {
         const panel = document.createElement('div');
         panel.id = id;
-        const initialTop = id === 'summary-panel-early' ? 90 : 250;
+        // Set a fixed top for each panel
+        const initialTop = id === 'summary-panel-early' ? 90 : 350;
         panel.style = `
             position: fixed;
             top: ${initialTop}px;
@@ -149,9 +140,9 @@
             font-family: Arial, sans-serif;
             color: #333;
             z-index: 10000;
-            max-width: 350px;
+            width: 22vw;
             min-width: 220px;
-            width: 90vw;
+            max-width: 400px;
             max-height: 60vh;
             overflow: auto;
         `;
@@ -282,9 +273,6 @@
                 </tr>
             </table>
         `;
-        if (id === 'summary-panel-early') {
-            adjustLatePanelPosition();
-        }
     }
 
     const processSlots = debounce(() => {
@@ -361,16 +349,19 @@
     window.addEventListener('load', () => {
         createSummaryPanel('summary-panel-early', 'Appointment Slot Summary Early');
         createSummaryPanel('summary-panel-late', 'Appointment Slot Summary Late');
+        processSlots();
+        observeDOMChanges();
+
+        // Wait until data is loaded and panels are rendered before positioning the second panel
         setTimeout(() => {
             const earlyPanel = document.getElementById('summary-panel-early');
             const latePanel = document.getElementById('summary-panel-late');
-            if (earlyPanel && latePanel) {
+            // Ensure both panels and their content are present
+            if (earlyPanel && latePanel && earlyPanel.offsetHeight > 0) {
                 const rect = earlyPanel.getBoundingClientRect();
-                latePanel.style.top = `${rect.bottom + 20}px`;
+                latePanel.style.top = `${rect.top + earlyPanel.offsetHeight + 20}px`;
             }
-        }, 0);
-        processSlots();
-        observeDOMChanges();
+        }, 3000); // Increased timeout to allow data/rendering
     });
 
     if (!document.getElementById('summary-panel-responsive-style')) {
@@ -379,8 +370,9 @@
         style.textContent = `
         @media (max-width: 600px) {
             #summary-panel-early, #summary-panel-late {
-                max-width: 98vw !important;
+                width: 98vw !important;
                 min-width: 0 !important;
+                max-width: 98vw !important;
                 font-size: 14px !important;
             }
         }
